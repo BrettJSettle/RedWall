@@ -202,10 +202,12 @@ def process_imgur_url(url):
     """
     if 'imgur.com/a/' in url or 'imgur.com/gallery/' in url:
         return extract_imgur_album_urls(url)
-    return []
+
     # use beautifulsoup4 to find real link
     # find vid url only
+    '''
     try:
+        print("TRYING AT %s" % url)
         from bs4 import BeautifulSoup
         html = urlopen(url).read()
         soup = BeautifulSoup(html, 'lxml')
@@ -219,6 +221,8 @@ def process_imgur_url(url):
     except Exception:
         # do nothing for awhile
         pass
+    '''
+
     # Change .png to .jpg for imgur urls.
     if url.endswith('.png'):
         url = url.replace('.png', '.jpg')
@@ -232,7 +236,6 @@ def process_imgur_url(url):
             url += '.jpg'
     return [url]
 
-
 def extract_urls(url):
     """
     Given an URL checks to see if its an imgur.com URL, handles imgur hosted
@@ -242,8 +245,9 @@ def extract_urls(url):
         list of image urls.
     """
     urls = []
-    #if 'i.imgur.com' in url:
-    #    url = url.replace('i.imgur', 'imgur')
+    
+    #print("Getting URLs for %s" % url)
+    
     if 'imgur.com' in url:
         urls = process_imgur_url(url)
     elif 'deviantart.com' in url:
@@ -395,11 +399,7 @@ def main(args, download = True):
             
             FILECOUNT = 0
             URLS = []
-            try:
-                URLS = extract_urls(ITEM['url'])
-            except Exception:
-                print("Failed to extract urls for %r", URLS)
-                continue
+            URLS = extract_urls(ITEM['url'])
             if len(URLS) == 0:
                 print("NO URLS from %s" % ITEM['url'])
                 continue
