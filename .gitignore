@@ -47,4 +47,5 @@ Temporary Items
 .apdisk
 
 out/*
+build
 __pycache__
