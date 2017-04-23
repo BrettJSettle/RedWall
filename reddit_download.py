@@ -196,45 +196,48 @@ def download_from_url(url, dest_file):
 
 
 def process_imgur_url(url):
-	"""
-	Given an imgur URL, determine if it's a direct link to an image or an
-	album.  If the latter, attempt to determine all images within the album
+    """
+    Given an imgur URL, determine if it's a direct link to an image or an
+    album.  If the latter, attempt to determine all images within the album
 
-	Returns:
-		list of imgur URLs
-	"""
-	if 'imgur.com/a/' in url or 'imgur.com/gallery/' in url:
-		return extract_imgur_album_urls(url)
-	return []
-	# use beautifulsoup4 to find real link
-	# find vid url only
-	try:
-		from bs4 import BeautifulSoup
-		html = urlopen(url).read()
-		soup = BeautifulSoup(html, 'lxml')
-		vid = soup.find('div', {'class': 'video-container'})
-		vid_type = 'video/webm'  # or 'video/mp4'
-		vid_url = vid.find('source', {'type': vid_type}).get('src')
-		if vid_url.startswith('//'):
-			vid_url = 'http:' + vid_url
-		return vid_url
+    Returns:
+        list of imgur URLs
+    """
+    if 'imgur.com/a/' in url or 'imgur.com/gallery/' in url:
+        return extract_imgur_album_urls(url)
 
-	except Exception:
-		# do nothing for awhile
-		pass
-	# Change .png to .jpg for imgur urls.
-	if url.endswith('.png'):
-		url = url.replace('.png', '.jpg')
-	else:
-		# Extract the file extension
-		ext = pathsplitext(pathbasename(url))[1]
-		if ext == '.gifv':
-			url = url.replace('.gifv', '.gif')
-		if not ext:
-			# Append a default
-			url += '.jpg'
-	return [url]
+    # use beautifulsoup4 to find real link
+    # find vid url only
+    '''
+    try:
+        print("TRYING AT %s" % url)
+        from bs4 import BeautifulSoup
+        html = urlopen(url).read()
+        soup = BeautifulSoup(html, 'lxml')
+        vid = soup.find('div', {'class': 'video-container'})
+        vid_type = 'video/webm'  # or 'video/mp4'
+        vid_url = vid.find('source', {'type': vid_type}).get('src')
+        if vid_url.startswith('//'):
+            vid_url = 'http:' + vid_url
+        return vid_url
 
+    except Exception:
+        # do nothing for awhile
+        pass
+    '''
+
+    # Change .png to .jpg for imgur urls.
+    if url.endswith('.png'):
+        url = url.replace('.png', '.jpg')
+    else:
+        # Extract the file extension
+        ext = pathsplitext(pathbasename(url))[1]
+        if ext == '.gifv':
+            url = url.replace('.gifv', '.gif')
+        if not ext:
+            # Append a default
+            url += '.jpg'
+    return [url]
 
 def extract_urls(url):
 	"""
@@ -267,6 +270,7 @@ def extract_urls(url):
 	else:
 		urls = [url]
 	return np.unique(urls)
+
 
 
 def slugify(value):
@@ -431,6 +435,7 @@ def main(args, download = True):
 
 	print('Downloaded {} files'.format(DOWNLOADED),
 		  '(Processed {}, Skipped {}, Exists {})'.format(TOTAL, SKIPPED, ERRORS))
+
 
 if __name__ == "__main__":
 	main(["wallpapers"])

@@ -252,6 +252,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if (self.image_ind > 10 or self.post_ind > 6) and post is not None:
             if os.path.exists(self.posts[post]['URLS'][img].localUrl):
                 os.unlink(self.posts[post]['URLS'][img].localUrl)
+                #os.remove(self.posts[post]['URLS'][img].localUrl)
             self.posts[post]['URLS'][img].localUrl = ""
 
         self.image_ind += 1
@@ -267,6 +268,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for url in post['URLS']:
                 if os.path.exists(url.localUrl):
                     os.unlink(url.localUrl)
+                    #os.remove(url.localUrl)
+
 
     def showImage(self):
         if self.filterGroup.isChecked() and self.skipCheck.isChecked():

@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Python27\\Lib\\site-packages\\PyQt4', 'D:\\Brett\\OneDrive\\Workspace\\WallpaperSuggest'],
+             pathex=['C:\\Python27\\Lib\\site-packages\\PyQt4', 'C:\\Users\\Brett\\Documents\\GitHub\\RedditBrowser'],
              binaries=[],
              datas=[],
              hiddenimports=[],
