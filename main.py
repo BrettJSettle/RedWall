@@ -1,3 +1,4 @@
+from set_wallpaper import set_wallpaper
 from qtpy.QtWidgets import *
 from PyQt5.QtWebKitWidgets import QWebView
 from qtpy import uic, QtCore, QtWidgets, QtGui
@@ -286,6 +287,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pix = QtGui.QPixmap()
         pixFull = QtGui.QPixmap()
         if os.path.exists(post['URLS'][self.image_ind].localUrl):
+            set_wallpaper(pos['URLS'][self.image_ind].localUrl)
+            '''
             local = True
             pixMain = QtGui.QPixmap()
             pixMain.load(post['URLS'][self.image_ind].localUrl)
@@ -300,7 +303,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 pix = pixMain.scaled(w, h, QtCore.Qt.KeepAspectRatio)
 
                 url = QtCore.QUrl.fromLocalFile(post['URLS'][self.image_ind].localUrl)
-
+            '''
         self.postIDEdit.setText(post['id'])
         info = "Title: %s\nURL: %s\nID: %s\nUps: %d, Downs: %d" % (post["title"], url.url(), post['id'], post['ups'], post['downs'])
         #if url.url() in self.scores['url'].values:
