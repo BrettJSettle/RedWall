@@ -2,8 +2,13 @@
 """Return list of items from a sub-reddit of reddit.com."""
 
 import sys
-from html.parser import HTMLParser
-from urllib.request import urlopen, Request, HTTPError
+if sys.version_info >= (3, 0):
+    from html.parser import HTMLParser
+    from urllib.request import urlopen, Request, HTTPError
+
+else:
+    from HTMLParser import HTMLParser
+    from urllib2 import urlopen, Request, HTTPError
 from json import JSONDecoder
 
 

@@ -169,7 +169,6 @@ def set_wallpaper(file_loc, first_run=False):
             except ImportError:
                 import subprocess
                 SCRIPT = '/usr/bin/osascript -e \'tell application "Finder" to set desktop picture to POSIX file "%s"\'' % file_loc
-                print(SCRIPT)
                 subprocess.Popen(SCRIPT, shell=True)
         else:
             if first_run: #don't spam the user with the same message over and over again
