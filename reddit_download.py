@@ -22,39 +22,24 @@ from reddit import getitems
 from deviantart import process_deviant_url
 import tempfile, threading
 
-exts = ('.png', '.gif', '.jpg', '.gifv', '.jpeg')
+exts = ('.png', '.jpg', '.jpeg')
 
 
 class ImageURL:
-	DOWNLOADING = 0
-	def __init__(self, url, download=False):
+	def __init__(self, url):
 		self.url = url
 		self.localUrl = ""
-		self.loading = download
 		self.downloadThread = threading.Thread(None, self.download)
+		self.downloadThread.start()
 
 	def download(self):
-
-		self.loading = True
-		while True:
-			if ImageURL.DOWNLOADING == -1:
-				print("VAL IS -1")
-				return
-			if ImageURL.DOWNLOADING < 3:
-				break
-			time.sleep(1)
-		
-		#print("Downloading %s" % self.url)
-		ImageURL.DOWNLOADING += 1
 		fp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
 		try:
 			download_from_url(self.url, fp)
 			self.localUrl = fp.name
 		except WrongFileTypeException:
 			pass
-		self.loading = False
-		ImageURL.DOWNLOADING -= 1
-		self.downloadThread = threading.Thread(None, self.download)
+
 
 def request(url, *ar, **kwa):
 	_retries = kwa.pop('_retries', 4)
@@ -333,10 +318,7 @@ def parse_reddit_argument(reddit_args):
 		return 'Downloading images from "{}" subreddit'.format(', '.join(reddit_args.split('+')))
 
 
-def main(args, download = True):
-	ARGS = parse_args(args)
-
-	print(parse_reddit_argument(ARGS.reddit))
+def next_post(reddit, last='', sfw=False, nsfw=False, title='', score=0):
 
 	TOTAL = DOWNLOADED = ERRORS = SKIPPED = FAILED = 0
 	FINISHED = False
@@ -344,14 +326,10 @@ def main(args, download = True):
 	# compile reddit comment url to check if url is one of them
 	reddit_comment_regex = re.compile(r'.*reddit\.com\/r\/(.*?)\/comments')
 
-	LAST = ARGS.last
-
-	start_time = None
-	ITEM = None
-
+	start_time = time.clock()
+	
 	while not FINISHED:
-		ITEMS = getitems(
-			ARGS.reddit, previd=LAST)
+		ITEMS = getitems(reddit, previd=last)
 		# measure time and set the program to wait 4 second between request
 		# as per reddit api guidelines
 		end_time = time.clock()
@@ -369,48 +347,35 @@ def main(args, download = True):
 			print("No more")
 			break
 		
-		POSTS = []
 		for ITEM in ITEMS:
 			TOTAL += 1
-			if 'youtube.com' in ITEM['url']:
-				continue
-			# not downloading if url is reddit comment
-			if ('reddit.com/r/' + ARGS.reddit + '/comments/' in ITEM['url'] or
+			if 'youtube.com' in ITEM['url'] or ('reddit.com/r/' + reddit + '/comments/' in ITEM['url'] or
 					re.match(reddit_comment_regex, ITEM['url']) is not None):
-				#print('    Skip:[{}]'.format(ITEM['url']))
-				ITEM['URLS'] = [ITEM['url']]
-				if ARGS.non_images:
-					print("NONIMAGE")
-					yield ITEM
-				continue
-
-			if ARGS.sfw and ITEM['over_18']:
-				if ARGS.verbose:
-					print('    NSFW: %s is marked as NSFW.' % (ITEM['id']))
-
+				#print("Skipping non image")
 				SKIPPED += 1
 				continue
-			elif ARGS.nsfw and not ITEM['over_18']:
-				if ARGS.verbose:
-					print('    Not NSFW, skipping %s' % (ITEM['id']))
-
+			if sfw and ITEM['over_18']:
+				#print("Skipping nsfw")
 				SKIPPED += 1
 				continue
-			if ARGS.title_contain and ARGS.title_contain.lower() not in ITEM['title'].lower():
-				if ARGS.verbose:
-					print('    Title does not contain "{}",'.format(ARGS.title_contain),
-						  'skipping {}'.format(ITEM['id']))
+			elif nsfw and not ITEM['over_18']:
+				#print("Skipping sfw")
 				SKIPPED += 1
 				continue
-
-			
+			if title and title.lower() not in ITEM['title'].lower():
+				#print("Skipping unrelated")
+				SKIPPED += 1
+				continue
+			if score and ITEM['score'] < score:
+				#print("Skipping low score")
+				SKIPPED += 1
+				continue
 			FILECOUNT = 0
 			URLS = []
 			try:
 				for url in extract_urls(ITEM['url']):
 					if not url.endswith(exts):
-						if ARGS.non_images:
-							URLS.append(ImageURL(url, download=False))
+						continue
 					else:
 						URLS.append(url)
 			except Exception:
@@ -420,23 +385,15 @@ def main(args, download = True):
 			if len(URLS) == 0:
 				print("NO URLS from %s" % ITEM['url'])
 				continue
-			else:
-				print("Found %d urls" % len(URLS))
 			
 			ITEM["URLS"] = [ImageURL(url) for url in URLS]
-			POSTS.append(ITEM)
 			yield ITEM
-			if len(POSTS) > ARGS.num:
-				FINISHED = True
-				break
+			return
 
-
-		LAST = ITEM['id'] if ITEM is not None else None
-
-	print('Downloaded {} files'.format(DOWNLOADED),
-		  '(Processed {}, Skipped {}, Exists {})'.format(TOTAL, SKIPPED, ERRORS))
+		print("Skipped %d images. ID: %s" % (SKIPPED, last))
+		last = ITEM['id'] if ITEM is not None else None
 
 
 if __name__ == "__main__":
-	main(["wallpapers"])
-
+	a = next_post("wallpapers")
+	print([i for i in a])
