@@ -49,3 +49,4 @@ Temporary Items
 out/*
 build
 __pycache__
+config.p
