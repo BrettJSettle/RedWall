@@ -5,13 +5,22 @@ import shutil
 from argparse import ArgumentParser
 from reddit_download import next_post
 import pickle
+from getch import getch
+
+LEFT = 75
+RIGHT = 77
+UP = 79
+DOWN = 74
 
 updateWallpaperThread = None
+
+class ImagePathExistsError(Exception):
+	pass
 
 class Settings:
 	def __init__(self):
 		self.saveDirectory = ''
-		self.reddit = ''
+		self.reddit = 'wallpapers'
 		self.sfw = 0
 		self.last = ''
 		self.score = 0
@@ -19,6 +28,7 @@ class Settings:
 		self.post = None
 		self.interval = 10
 		self.path = ''
+		self.verbose = False
 
 	def update(self, args):
 		args_map = {'score': 'score', 'sfw': 'sfw', 'title_contain': 'title'}
@@ -72,6 +82,8 @@ def parse_args(args):
 
 	PARSER.add_argument('-d', '--download', default=config.saveDirectory, required=False, help="Download the image to specified directory.")
 
+	PARSER.add_argument('-v', '--verbose', action='store_true', required=False, help='With iterating interfaces, display image info on change')
+
 	parsed_argument = PARSER.parse_args(args)
 
 	if parsed_argument.sfw is True and parsed_argument.nsfw is True:
@@ -80,21 +92,20 @@ def parse_args(args):
 
 	return parsed_argument
 
-def saveImage(path):
-	print("Saving Image...")
+def save_image(path):
 	tmpPath = config.post.currentImage().path
 	if os.path.exists(path):
 		if os.path.isdir(path):
 			resPath = os.path.join(path, os.path.basename(tmpPath))
 		else:
-			while os.path.exists(path):
-				path = input("File exists, enter a different location: ")
-			resPath = path
+			raise ImagePathExistsError()
 	else:
 		resPath = path
-
-	print('Saving image at %s to %s' % (path, resPath))
-	shutil.copyfile(path, resPath)
+	resPath = os.path.abspath(resPath)
+	config.saveDirectory = os.path.dirname(path)
+	if config.verbose:
+		print('Saving image at %s to %s' % (path, resPath))
+	shutil.copyfile(tmpPath, resPath)
 
 
 def download_and_show_image(image):
@@ -110,21 +121,24 @@ def download_and_show_image(image):
 	
 
 def next_image(post=False):
-	print("Next %s..." % ('image' if not post else 'post'))
 	image = None
+
 	if not post and config.post:
 		image = config.post.next()
 
 	if not image:
-		global updateWallpaperThread
+		if config.verbose:
+			print("New Post...")
+		if config.post:
+			config.post.currentImage().removeLocal()
 		config.post = next_post(config.reddit, last=config.last,
 				sfw=config.sfw == 1, nsfw=config.sfw == 2,
 				score=config.score, title=config.title)
 		config.last = config.post.id
 		image = config.post.currentImage()
-		config.save()
 
-	print("%d/%d images, ID: %s" % (config.post.image_index + 1, len(config.post), config.post.id))
+	if config.verbose:
+		print_info()
 
 	show_image(image)
 
@@ -134,14 +148,33 @@ def gui():
 	win = QtWidgets.QWidget()
 	layout = QtWidgets.QGridLayout()
 	win.setLayout(layout)
-	infoText = QtWidgets.QLabel("Info Here")
+	def nextImagePressed():
+		next_image()
+		infoText.setText(str(config.post))
+	def nextPostPressed():
+		next_image(post=True)
+		infoText.setText(str(config.post))
+	def prevImagePressed():
+		prev_image()
+		infoText.setText(str(config.post))
+	def downloadPressed():
+		im = QtWidgets.QFileDialog.getSaveFileName(win, 'Save file as', os.path.join(config.saveDirectory, os.path.basename(config.post.currentImage().path)), '*.jpg')
+		if isinstance(im, tuple):
+			im = im[0]
+		if not im:
+			return
+		save_image(im)
+	infoText = QtWidgets.QLabel(str(config.post))
 	lastButton = QtWidgets.QPushButton("<")
-	lastButton.pressed.connect(prev_image)
+	lastButton.pressed.connect(prevImagePressed)
 	nextButton = QtWidgets.QPushButton('>')
-	nextButton.pressed.connect(next_image)
+	nextButton.pressed.connect(nextImagePressed)
 	nextPostButton = QtWidgets.QPushButton('>>')
-	nextPostButton.pressed.connect(lambda : next_image(True))
-	layout.addWidget(infoText, 0, 0, 1, 3)
+	nextPostButton.pressed.connect(nextPostPressed)
+	downloadButton = QtWidgets.QPushButton("Download")
+	downloadButton.pressed.connect(downloadPressed)
+	layout.addWidget(infoText, 0, 0, 1, 2)
+	layout.addWidget(downloadButton, 0, 2)
 	layout.addWidget(lastButton, 1, 0)
 	layout.addWidget(nextButton, 1, 1)
 	layout.addWidget(nextPostButton, 1, 2)
@@ -149,46 +182,56 @@ def gui():
 	app.exec_()
 
 def show_image(image=None):
+	global updateWallpaperThread
 	if not image:
 		image = config.post.currentImage()
+
 	if image.path == '':
 		updateWallpaperThread = threading.Thread(None, lambda : download_and_show_image(image))
 		updateWallpaperThread.start()
 	else:
 		res = set_wallpaper(image.path)
 		config.path = image.path
+	config.save()
 
 def prev_image():
 	if config.post.image_index > 0:
-		print("Previous Image...")
 		config.post.image_index -= 1
 		show_image()
 
+	if config.verbose:
+		print_info()
+
+def getKey():
+	k=getch()
+	if ord(k) == 27 and ord(getch()) == 91:
+		k = ord(getch())
+		return [UP, DOWN, RIGHT, LEFT][k - 65]
+	return k
+
 def interactive():
-	from msvcrt import getch
 	while True:
-		key = ord(getch())
-		if key in (3, 113):
+		key = getKey()
+		if key == 'q':
 			return
-		elif key == 100:
+		elif key == 't':
 			path = input("Enter name(%s):" % os.path.basename(config.post.currentImage().path))
-			saveImage(path)
-		elif key == 114:
+			save_image(path)
+		elif key == 'r':
 			config.reddit = input('Reddit:')
 			config.last = ''
 			config.save()
-		elif key == 105:
+		elif key == 'i':
 			print_info()
-		elif key == 75:
+		elif key == LEFT:
 			prev_image()
-		elif key == 110:
+		elif key == 'n':
 			next_image(post=True)
-		elif key == 77:
+		elif key == RIGHT:
 			next_image()
-		elif key == 224:
-			pass
 		else:
-			print(key)
+			pass
+			#print(key)
 
 
 def print_info():
@@ -205,10 +248,13 @@ def schedule_intervals():
 
 if __name__ == '__main__':
 	args = sys.argv[1:]
-	args = ['-g']
+	#args = ['-g']
 	config = Settings.load()
 	args = parse_args(args)
 	config.update(args)
+	
+	if not config.reddit:
+		raise Exception("No subreddit specified. Use -r [subreddit] to scrape images")
 
 	if args.gui:
 		gui()
@@ -216,7 +262,7 @@ if __name__ == '__main__':
 		interactive()
 	elif args.download:
 		path = args.download
-		saveImage(path)
+		save_image(path)
 	elif args.info:
 		print_info()
 	elif args.time:

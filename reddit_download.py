@@ -47,17 +47,24 @@ class Post:
 	def __str__(self):
 		return """URL: %s
 ID: %s
-Images: %d""" % (self.url, self.id, len(self.images))
+Image: %d/%d""" % (self.url, self.id, self.image_index+1, len(self.images))
 
 	def next(self):
-		self.images[self.image_index].removeLocal()
 		self.image_index += 1
 		if self.image_index >= len(self.images):
 			return False
 		return self.images[self.image_index]
 
 	def currentImage(self):
-		return self.images[self.image_index]
+		if os.path.exists(self.images[self.image_index].path):
+			return self.images[self.image_index]
+		else:
+			self.images[self.image_index].path = ''
+			self.images[self.image_index].download()
+			while self.images[self.image_index].path == '':
+				pass
+			return self.images[self.image_index]
+
 
 	def __len__(self):
 		return len(self.images)
@@ -77,15 +84,20 @@ class ImageURL:
 				download_from_url(self.url, fp)
 				self.path = fp.name
 			except WrongFileTypeException:
+				print("FAILED TO DOWNLOAD")
 				pass
-		
+
 		ImageURL.downloadThread = threading.Thread(None, download_file)
 		ImageURL.downloadThread.start()
 
 	def removeLocal(self):
 		if os.path.exists(self.path):
 			os.remove(self.path)
+			print("removing %s" % self.path)
 		self.path = ''
+
+	def __str__(self):
+		return "URL: %s\nPath: %s" % (self.url, self.path)
 
 def request(url, *ar, **kwa):
 	_retries = kwa.pop('_retries', 4)

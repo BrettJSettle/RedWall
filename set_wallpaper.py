@@ -1,5 +1,6 @@
 import ctypes
 import os, sys
+import subprocess
 
 APP_NAME = 'desktop.conf'
 
@@ -44,7 +45,7 @@ def get_desktop_environment():
             return "xfce4"
         elif is_running("ksmserver"):
             return "kde"
-        return "unknown"
+        return sys.platform.strip()
 
 def is_running(process):
     #From http://www.bloggerpolis.com/2011/05/how-to-check-if-a-process-is-running-using-python/
@@ -58,7 +59,11 @@ def is_running(process):
                 return True
     return False
 
+
 def set_wallpaper(file_loc, first_run=False):
+    if not os.path.exists(file_loc):
+        print("File not found")
+        return
     # Note: There are two common Linux desktop environments where
     # I have not been able to set the desktop background from
     # command line: KDE, Enlightenment
@@ -72,8 +77,12 @@ def set_wallpaper(file_loc, first_run=False):
                 gsettings = Gio.Settings.new(SCHEMA)
                 gsettings.set_string(KEY, uri)
             except:
-                args = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri]
-                subprocess.Popen(args)
+                #args = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri]
+                # This didn't work for me, so I switched to this
+                args = ['dconf', 'write', '/org/gnome/desktop/background/picture-uri', '"%s"' % uri]
+                #res = subprocess.Popen(args)
+                # Again, this didn't work, use os.system instead
+                os.system(' '.join(args))
         elif desktop_env=="mate":
             try: # MATE >= 1.6
                 # info from http://wiki.mate-desktop.org/docs:gsettings
@@ -167,7 +176,6 @@ def set_wallpaper(file_loc, first_run=False):
                 from appscript import app, mactypes
                 app('Finder').desktop_picture.set(mactypes.File(file_loc))
             except ImportError:
-                import subprocess
                 SCRIPT = '/usr/bin/osascript -e \'tell application "Finder" to set desktop picture to POSIX file "%s"\'' % file_loc
                 subprocess.Popen(SCRIPT, shell=True)
         else:
