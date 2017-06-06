@@ -15,7 +15,7 @@ install_requires = [
       'beautifulsoup4',]
 
 setup(name='redwall',
-      version='0.0.2',
+      version='0.0.3',
       description='A reddit wallpaper scraper',
       long_description=LONG_DESCRIPTION,
       author='Brett Settle',
@@ -31,7 +31,7 @@ setup(name='redwall',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           ],
-      packages=find_packages(),
+      packages=['redwall'],
       entry_points=entry_points)
 
 
