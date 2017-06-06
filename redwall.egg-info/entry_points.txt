@@ -1,3 +1,0 @@
-
-[console_scripts]
-redwall = redwall.main:main
