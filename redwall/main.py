@@ -317,6 +317,7 @@ def schedule_intervals():
 		time.sleep(config.interval)
 
 def main():
+	global config
 	args = sys.argv[1:]
 	#args = ['-g']
 	config = Settings.load()
@@ -354,4 +355,5 @@ def main():
 
 
 if __name__ == '__main__':
+	config = None
 	main()
