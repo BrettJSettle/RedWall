@@ -18,7 +18,6 @@ from os.path import (
 	splitext as pathsplitext)
 from os import mkdir, getcwd
 import time
-import numpy as np
 from io import StringIO, BytesIO
 
 from gfycat import gfycat
@@ -35,6 +34,7 @@ class Post:
 		self.url = url
 		self.images = []
 		self.image_index = 0
+		self.new = True
 
 	def add_image(self, image):
 		if isinstance(image, str):
@@ -45,17 +45,24 @@ class Post:
 		return False
 
 	def __str__(self):
-		return """URL: %s
+		return """Post: %s
 ID: %s
-Image: %d/%d""" % (self.url, self.id, self.image_index+1, len(self.images))
+Image #%d/%d
+%s""" % (self.url, self.id, self.image_index+1, len(self.images), str(self.currentImage()))
 
 	def next(self):
-		self.image_index += 1
+		if self.new:
+			self.new = False
+		else:
+			self.image_index += 1
+	
 		if self.image_index >= len(self.images):
 			return False
 		return self.images[self.image_index]
 
 	def currentImage(self):
+		if self.image_index >= len(self.images):
+			return None
 		if os.path.exists(self.images[self.image_index].path):
 			return self.images[self.image_index]
 		else:
@@ -93,11 +100,11 @@ class ImageURL:
 	def removeLocal(self):
 		if os.path.exists(self.path):
 			os.remove(self.path)
-			print("removing %s" % self.path)
+			#print("Removing %s" % self.path)
 		self.path = ''
 
 	def __str__(self):
-		return "URL: %s\nPath: %s" % (self.url, self.path)
+		return "Image URL: %s\nLocal Path: %s" % (self.url, self.path)
 
 def request(url, *ar, **kwa):
 	_retries = kwa.pop('_retries', 4)
@@ -309,7 +316,7 @@ def extract_urls(url):
 		pass
 	else:
 		urls = [url]
-	return np.unique(urls)
+	return urls
 
 
 
@@ -373,7 +380,7 @@ def parse_reddit_argument(reddit_args):
 		return 'Downloading images from "{}" subreddit'.format(', '.join(reddit_args.split('+')))
 
 
-def next_post(reddit, last='', sfw=False, nsfw=False, title='', score=0):
+def get_next_post(reddit, last='', sfw=False, nsfw=False, title='', score=0):
 
 	SKIPPED = 0
 
@@ -429,8 +436,8 @@ def next_post(reddit, last='', sfw=False, nsfw=False, title='', score=0):
 				for url in extract_urls(POST.url):
 					if url.endswith(exts):
 						POST.add_image(url)
-			except Exception:
-				print("Failed to extract urls for %s" % POST.url)
+			except Exception as e:
+				print("Failed to extract urls for %s. %s" % (POST.url, e))
 				continue
 
 			if len(POST) == 0:
@@ -444,5 +451,5 @@ def next_post(reddit, last='', sfw=False, nsfw=False, title='', score=0):
 
 
 if __name__ == "__main__":
-	a = next_post("wallpaperdump")
+	a = get_next_post("wallpaperdump")
 	print(a)

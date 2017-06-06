@@ -1,0 +1,3 @@
+
+[console_scripts]
+redwall = redditbrowser.main:main
