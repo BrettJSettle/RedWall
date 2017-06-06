@@ -47,7 +47,7 @@ class Post:
 	def __str__(self):
 		return """Post: %s
 ID: %s
-Image #%d/%d
+Image %d/%d
 %s""" % (self.url, self.id, self.image_index+1, len(self.images), str(self.currentImage()))
 
 	def next(self):
@@ -61,6 +61,7 @@ Image #%d/%d
 		return self.images[self.image_index]
 
 	def currentImage(self):
+		self.new = False
 		if self.image_index >= len(self.images):
 			return None
 		if os.path.exists(self.images[self.image_index].path):

@@ -202,6 +202,7 @@ def show_image(image=None):
 	if not image:
 		if not config.post:
 			image = next_image()
+			return
 		image = config.post.currentImage()
 
 	if image.path == '':
@@ -220,6 +221,7 @@ def next_image(post=False):
 	if not post and config.post:
 		if config.post.currentImage():
 			config.post.currentImage().removeLocal()
+		
 		image = config.post.next()
 
 	if not image:
