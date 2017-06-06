@@ -1,0 +1,20 @@
+Metadata-Version: 1.1
+Name: redwall
+Version: 0.0.2
+Summary: A reddit wallpaper scraper
+Home-page: UNKNOWN
+Author: Brett Settle
+Author-email: brettjsettle@gmail.com
+License: MIT
+Description: # RedWall
+        
+        Scrape subreddits and slideshow through images or posts with a timer.  Images are cached to the temp directory currently and removing them is finicky. Don't let them pile up.
+        
+Platform: UNKNOWN
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6

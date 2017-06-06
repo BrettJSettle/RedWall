@@ -19,12 +19,12 @@ from os.path import (
 from os import mkdir, getcwd
 import time
 from io import StringIO, BytesIO
-
-from gfycat import gfycat
-from reddit import getitems
-from deviantart import process_deviant_url
 import tempfile, threading
-from collections import OrderedDict
+
+
+from .gfycat import gfycat
+from .reddit import getitems
+from .deviantart import process_deviant_url
 
 exts = ('.png', '.jpg', '.jpeg')
 

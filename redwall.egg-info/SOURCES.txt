@@ -1,0 +1,8 @@
+README.rst
+setup.py
+redwall.egg-info/PKG-INFO
+redwall.egg-info/SOURCES.txt
+redwall.egg-info/dependency_links.txt
+redwall.egg-info/entry_points.txt
+redwall.egg-info/requires.txt
+redwall.egg-info/top_level.txt

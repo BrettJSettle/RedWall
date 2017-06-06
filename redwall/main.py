@@ -1,10 +1,11 @@
-from set_wallpaper import set_wallpaper
-from reddit_download import get_next_post, download_from_url
+from .set_wallpaper import set_wallpaper
+from .reddit_download import get_next_post, download_from_url
+from .getch import getch
+
 import sys, os, time, threading
 import shutil
 from argparse import ArgumentParser
 import pickle
-from getch import getch
 
 LEFT = 75
 RIGHT = 77
@@ -317,6 +318,7 @@ def schedule_intervals():
 		time.sleep(config.interval)
 
 def main():
+	global config
 	args = sys.argv[1:]
 	#args = ['-g']
 	config = Settings.load()
@@ -354,4 +356,5 @@ def main():
 
 
 if __name__ == '__main__':
+	config = None
 	main()

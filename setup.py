@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-with open('README.md') as readme:
+with open('README.rst') as readme:
     LONG_DESCRIPTION = readme.read()
 
 
@@ -15,7 +15,7 @@ install_requires = [
       'beautifulsoup4',]
 
 setup(name='redwall',
-      version='0.0.1',
+      version='0.0.2',
       description='A reddit wallpaper scraper',
       long_description=LONG_DESCRIPTION,
       author='Brett Settle',
@@ -30,8 +30,6 @@ setup(name='redwall',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Topic :: Scientific/Engineering :: Visualization',
           ],
       packages=find_packages(),
       entry_points=entry_points)
