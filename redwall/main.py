@@ -72,7 +72,7 @@ class Settings:
 
 	def __str__(self):
 		reddit = self.reddit
-		return "Subreddit: %s\n%s" % (reddit, str(self.post) if self.post else "No Post")
+		return "Subreddit: %s\n%s\n" % (reddit, str(self.post) if self.post else "No Post")
 
 def parse_args(args):
 	PARSER = ArgumentParser(description='Downloads files with specified extension'
@@ -140,17 +140,23 @@ def gui():
 	layout = QtWidgets.QGridLayout()
 	win.setLayout(layout)
 	def nextImagePressed():
+		infoText.setText("Loading...")
+		QtWidgets.QApplication.instance().processEvents()
 		next_image()
 		showInfo()
 	def nextPostPressed():
+		infoText.setText("Loading...")
+		QtWidgets.QApplication.instance().processEvents()
 		next_image(post=True)
 		showInfo()
 	def prevImagePressed():
+		infoText.setText("Loading...")
+		QtWidgets.QApplication.instance().processEvents()
 		prev_image()
 		showInfo()
 	def showInfo():
-		infoText.setText(str(config))
 		prevButton.setEnabled(config.post is not None and config.post.image_index != 0)
+		infoText.setText("")
 	def downloadPressed():
 		path = QtWidgets.QFileDialog.getSaveFileName(win, 'Save file as', os.path.join(config.saveDirectory, os.path.basename(config.post.currentImage().path)), '*.jpg')
 		if isinstance(path, tuple):
@@ -176,19 +182,46 @@ def gui():
 		show_image()
 		showInfo()
 
-	infoText = QtWidgets.QLabel(str(config))
-	prevButton = QtWidgets.QPushButton("<")
+	infoButton = QtWidgets.QPushButton("")
+	infoText = QtWidgets.QLabel("")
+	prevButton = QtWidgets.QPushButton("")
 	prevButton.pressed.connect(prevImagePressed)
-	nextButton = QtWidgets.QPushButton('>')
+	nextButton = QtWidgets.QPushButton('')
 	nextButton.pressed.connect(nextImagePressed)
-	nextPostButton = QtWidgets.QPushButton('>>')
+	nextPostButton = QtWidgets.QPushButton('')
 	nextPostButton.pressed.connect(nextPostPressed)
-	downloadButton = QtWidgets.QPushButton("Download")
+	downloadButton = QtWidgets.QPushButton("")
 	downloadButton.pressed.connect(downloadPressed)
-	redditButton = QtWidgets.QPushButton("Change Subreddit")
+	redditButton = QtWidgets.QPushButton("Sub(s)")
 	redditButton.pressed.connect(redditPressed)
 	prevButton.setEnabled(config.post is not None and config.post.image_index != 0)
-	layout.addWidget(infoText, 0, 0, 2, 2)
+
+	icon = QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/prev.png"))
+	prevButton.setIcon(icon)
+	icon = QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/next.png"))
+	nextButton.setIcon(icon)
+	icon = QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/nextPost.png"))
+	nextPostButton.setIcon(icon)
+	icon = QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/download.png"))
+	downloadButton.setIcon(icon)
+	icon = QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/info.png"))
+	infoButton.setIcon(icon)
+
+	def showLabel():
+		win.panel = QtWidgets.QWidget()
+		win.panel.label = QtWidgets.QLabel(str(config))
+		#win.panel.label.setReadOnly(True)
+		win.panel.label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+		layout = QtWidgets.QGridLayout()
+		win.panel.setLayout(layout)
+		layout.addWidget(win.panel.label)
+		layout.setContentsMargins(10, 10, 10, 10)
+		win.panel.show()
+
+	infoButton.pressed.connect(showLabel)
+
+	layout.addWidget(infoButton, 0, 0, 1, 2)
+	layout.addWidget(infoText, 1, 0, 1, 2)
 	layout.addWidget(downloadButton, 0, 2)
 	layout.addWidget(redditButton, 1, 2)
 	layout.addWidget(prevButton, 2, 0)
@@ -211,8 +244,8 @@ def show_image(image=None):
 	else:
 		res = set_wallpaper(image.path)
 		config.path = image.path
-	if config.verbose:
-		print_info()
+		if config.verbose:
+			print_info()
 	config.save()
 
 def next_image(post=False):
@@ -255,29 +288,31 @@ def prev_image():
 
 def getKey():
 	k=getch()
-	if ord(k) == 27 and ord(getch()) == 91:
-		k = ord(getch())
-		return [UP, DOWN, RIGHT, LEFT][k - 65]
-	return k
+	k = chr(ord(k))
+	if k == 'à':
+		k = chr(ord(getch()))
+	return k.lower()
 
 def interactive():
 	help_text = '''
 Interactive Mode
 Keys:
- Right Arrow - Next Image in Post
- Left-arrow - Previous Image in Post
+ d - Next Image in Post
+ a - Previous Image in Post
  n - Next Post
  i - Post/Image Information
- d - Download Image
+ s - Save Image Locally
  r - Enter a new subreddit to scrape
  h - Display they help
- '''
+ q - Quit
+'''
+	un = 0
 	print(help_text)
 	while True:
 		key = getKey()
 		if key == 'q':
 			return
-		elif key == 'd':
+		elif key == 's':
 			path = input("Enter name(%s):" % os.path.basename(config.post.currentImage().path))
 			if path.strip() == '':
 				path = os.path.basename(config.post.currentImage().path)
@@ -297,16 +332,22 @@ Keys:
 			config.save()
 		elif key == 'i':
 			print_info()
-		elif key == LEFT:
+		elif key == 'a':
 			prev_image()
 		elif key == 'n':
 			next_image(post=True)
-		elif key == RIGHT:
+		elif key == 'd':
 			next_image()
 		elif key == 'h':
 			print(help_text)
+		elif key == 'q':
+			break
 		else:
-			pass
+			print("Unkown key %s" % key)
+			un += 1
+			if un > 5:
+				print("Key unrecognized 5 times. Quitting")
+				return
 			#print(key)
 
 
@@ -353,8 +394,6 @@ def main():
 		schedule_intervals()
 	else:
 		next_image()
-		if args.info:
-			print_info()
 
 
 if __name__ == '__main__':

@@ -100,7 +100,10 @@ class ImageURL:
 
 	def removeLocal(self):
 		if os.path.exists(self.path):
-			os.remove(self.path)
+			try:
+				os.remove(self.path)
+			except:
+				pass
 			#print("Removing %s" % self.path)
 		self.path = ''
 
