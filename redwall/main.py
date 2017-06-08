@@ -20,7 +20,7 @@ class ImagePathExistsError(Exception):
 class Settings:
 	def __init__(self):
 		self._reddit = 'wallpaperdump'
-		self.sfw = 0
+		self.sfw = 1
 		self.last = ''
 		#self.score = 0
 		#self.title = ''
