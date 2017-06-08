@@ -239,8 +239,9 @@ def show_image(image=None):
 		image = config.post.currentImage()
 
 	if image.path == '':
-		updateWallpaperThread = threading.Thread(None, lambda : download_and_show_image(image))
-		updateWallpaperThread.start()
+		#updateWallpaperThread = threading.Thread(None, lambda : download_and_show_image(image))
+		#updateWallpaperThread.start()
+		return download_and_show_image(image)
 	else:
 		res = set_wallpaper(image.path)
 		config.path = image.path
@@ -259,6 +260,9 @@ def next_image(post=False):
 
 	if not image:
 		return next_post()
+	else:
+		if config.verbose:
+			print("New Image...")
 
 	show_image(image)
 
