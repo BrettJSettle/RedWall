@@ -58,7 +58,9 @@ class Settings:
 			self.last = args.last
 
 	@staticmethod
-	def load(path='config.p'):
+	def load(path=None):
+		if not path:
+			path = os.path.expanduser('~/.redwall.p')
 		settings = Settings()
 		if os.path.exists(path):
 			try:
@@ -67,7 +69,9 @@ class Settings:
 				print("Failed to load settings. \n%s\nUsing defaults" % e)
 		return settings
 
-	def save(self, path='config.p'):
+	def save(self, path=None):
+		if not path:
+			path = os.path.expanduser('~/.redwall.p')
 		return pickle.dump(self, open(path, 'wb'))
 
 	def __str__(self):
