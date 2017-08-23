@@ -8,7 +8,8 @@ with open('README.rst') as readme:
 
 entry_points = """
 [console_scripts]
-redwall = redwall.main:main
+redwall_screensaver = redwall.screensaver:screensaver
+redwall_control = redwall.screensaver:control
 """
 
 install_requires = [
@@ -33,7 +34,6 @@ setup(name='redwall',
           ],
       packages=['redwall'],
       include_package_data=True,
-      package_data={'images': ['*.ico', '*.png']},
       entry_points=entry_points)
 
 

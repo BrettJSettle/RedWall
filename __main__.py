@@ -1,2 +1,1 @@
-from redwall.main import main
-main()
+from redwall.reddit_scraper import RedditScraper

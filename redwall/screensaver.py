@@ -26,6 +26,8 @@ def screensaver(scrapeSettings={}, interval=8):
 		lastImage = image
 		s = time.time()
 
+
+
 def control(scrapeSettings={}):
 	scraper = RedditScraper(**scrapeSettings)
 	history = {}
@@ -125,8 +127,14 @@ def parse_args(args):
 
 	return parsed_argument
 
-if __name__ == '__main__':
-	args = parse_args(sys.argv[1:])
+def screensaver_endpoint():
+	main()
+
+def control_endpoint():
+	main(sys.argv[1:] + ['-c'])
+
+def main(argv=sys.argv[1:]):
+	args = parse_args(argv)
 	
 	args = args.__dict__
 
@@ -138,3 +146,6 @@ if __name__ == '__main__':
 		i = args.pop('interval')
 		screensaver(args, interval=i)
 	
+
+if __name__ == '__main__':
+	main()
