@@ -15,8 +15,8 @@ install_requires = [
       'beautifulsoup4',]
 
 setup(name='redwall',
-      version='0.0.8',
-      description='A reddit wallpaper scraper',
+      version='0.0.9',
+      description='A reddit image/post scraper',
       long_description=LONG_DESCRIPTION,
       author='Brett Settle',
       author_email='brettjsettle@gmail.com',
