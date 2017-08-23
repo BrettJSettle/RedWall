@@ -8,8 +8,8 @@ with open('README.rst') as readme:
 
 entry_points = """
 [console_scripts]
-redwall_screensaver = redwall.screensaver:screensaver
-redwall_control = redwall.screensaver:control
+redwall_screensaver = redwall.screensaver:screensaver_endpoint
+redwall_control = redwall.screensaver:control_endpoint
 """
 
 install_requires = [
