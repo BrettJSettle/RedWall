@@ -17,8 +17,8 @@ from os.path import (
 from os import mkdir, getcwd
 from io import StringIO, BytesIO
 
-from gfycat import gfycat
-from deviantart import process_deviant_url
+from .gfycat import gfycat
+from .deviantart import process_deviant_url
 
 def request(url, *ar, **kwa):
 	_retries = kwa.pop('_retries', 4)

@@ -1,6 +1,7 @@
-from reddit import getitems
+from .reddit import getitems
+from .reddit_objects import Post, Image
+
 import re, time
-from reddit_objects import Post, Image
 
 class RedditScraper():
 	def __init__(self, subreddit='images', previd=None, sfw=True, nsfw=False, score=0, title=None, nonimages=False):
@@ -18,9 +19,17 @@ class RedditScraper():
 		self._foresight = 5
 		self._started = False
 
-	def update(self, name, val):
+	def update(self, name, val, reset=True):
 		self.__dict__[name] = val
-		self.posts = self.posts[:self.post_index]
+		if reset:
+			if name != self.previd:
+				self.previd = ''
+			self.posts = []
+			self.post_index = 0
+			print("Scraping sites in preparation...")
+			self.getPosts(3)
+			print("READY")
+		self.posts = self.posts[:self.post_index+1]
 
 	def __iter__(self):
 		return self
@@ -75,6 +84,9 @@ class RedditScraper():
 
 			for ITEM in ITEMS:
 
+				if 'dropbox.com' in ITEM['url']:
+					SKIPPED += 1
+					continue
 				if self.nonimages and 'youtube.com' in ITEM['url'] or ('reddit.com/r/' + self.subreddit + '/comments/' in ITEM['url'] or
 						re.match(reddit_comment_regex, ITEM['url']) is not None):
 					#print("Skipping non image")

@@ -1,4 +1,5 @@
-from url_util import extract_urls, download_from_url
+from .url_util import extract_urls, download_from_url
+
 import threading, tempfile, os, sys, time
 if sys.version_info >= (3, 0):
 	from urllib.request import HTTPError
@@ -34,10 +35,12 @@ class Post:
 		return self.images[i]
 
 	def __str__(self):
-		return """Post: %s
+		return """
+Post: %s
 ID: %s
 Image %d/%d
-%s""" % (self.url, self.id, self.image_index+1, len(self.images), str(self.peek()))
+%s
+""" % (self.url, self.id, self.next_index+1, len(self.images), str(self.peek()))
 
 	def __iter__(self):
 		for image in self.images:
@@ -86,11 +89,16 @@ class Image:
 
 
 	def removeLocal(self):
+		if not self.path:
+			return
 		if os.path.exists(self.path):
 			try:
 				os.remove(self.path)
-			except:
+			except Exception as e:
+				print("Failed to remove. %s" % e)
 				pass
+		else:
+			print("%s does not exist" % self.path)
 		self.path = ''
 
 	def __str__(self):
