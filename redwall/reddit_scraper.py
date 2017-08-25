@@ -42,6 +42,10 @@ class RedditScraper():
 			
 		if self.post_index >= len(self.posts) - self._foresight:
 			self.getPosts(self.post_index + self._foresight - len(self.posts))
+		
+		if self.post_index >= len(self.posts):
+			return None
+		
 		return self.posts[self.post_index]
 
 	def next(self):
@@ -49,6 +53,8 @@ class RedditScraper():
 
 	def imageIter(self):
 		for post in self:
+			if post == None:
+				yield None
 			for image in post.images:
 				yield image
 
