@@ -151,7 +151,6 @@ def download_from_url(url, dest_file):
 	if type(dest_file) == str:
 		filehandle.close()
 
-
 def process_imgur_url(url):
 	"""
 	Given an imgur URL, determine if it's a direct link to an image or an
@@ -226,7 +225,11 @@ def extract_urls(url):
 		pass
 	else:
 		urls = [url]
-	return urls
+	urls_no_duplicates = []
+	for url in urls:
+		if url not in urls_no_duplicates:
+			urls_no_duplicates.append(url)
+	return urls_no_duplicates
 
 
 

@@ -102,7 +102,7 @@ def getitems(subreddit, multireddit=False, previd='', reddit_sort=None):
 
     try:
         req = Request(url, headers=hdr)
-        json = urlopen(req).read()
+        json = urlopen(req, timeout=5).read()
         json = json.decode('utf-8')
         data = JSONDecoder().decode(json)
         if isinstance(data, dict):

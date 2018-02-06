@@ -174,10 +174,25 @@ def set_wallpaper(file_loc, first_run=False):
             #From https://stackoverflow.com/questions/431205/how-can-i-programatically-change-the-background-in-mac-os-x
             try:
                 from appscript import app, mactypes
-                app('Finder').desktop_picture.set(mactypes.File(file_loc))
+                finder = app('Finder')
+                dp = finder.desktop_picture
+                f = mactypes.File(file_loc)
+                dp.set(f)
             except ImportError:
                 SCRIPT = '/usr/bin/osascript -e \'tell application "Finder" to set desktop picture to POSIX file "%s"\'' % file_loc
                 subprocess.Popen(SCRIPT, shell=True)
+            except Exception as e:
+                
+                SCRIPT = """/usr/bin/osascript<<END
+                tell application "Finder"
+                set desktop picture to POSIX file "%s"
+                end tell
+                END"""
+
+                def set_desktop_background(filename):
+                    subprocess.Popen(SCRIPT%filename, shell=True)
+                set_desktop_background(file_loc)
+        
         else:
             if first_run: #don't spam the user with the same message over and over again
                 sys.stderr.write("Warning: Failed to set wallpaper. Your desktop environment(%s) is not supported.\n" % desktop_env)
