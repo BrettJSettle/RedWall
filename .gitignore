@@ -53,3 +53,6 @@ config.p
 dist
 *.egg-info
 **.pyc
+
+redwall_session.rw
+

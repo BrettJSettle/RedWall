@@ -2,9 +2,12 @@ import os, random, configparser, requests, json, re, time, pickle, sys, tempfile
 from collections import OrderedDict
 from .reddit import getitems
 from .url_util import extract_urls, download_from_url
-from set_wallpaper import set_wallpaper
+from redwall.set_wallpaper import set_wallpaper
+from glob import glob
 
-__all__ = ['Signal', 'FlickrSearchScraper', 'FlickrProfileScraper', 'SubredditScraper', 'SCRAPER_TYPES', 'ScraperSession', 'AbstractScraper']
+__all__ = ['Signal', 'FlickrSearchScraper', 'FlickrProfileScraper', 'SubredditScraper',
+			'DirectoryScraper', 'SCRAPER_TYPES', 'ScraperSession', 'AbstractScraper', 'ImageScrapeError']
+
 
 def unjsonpify(jsonp):
 	return jsonp[14:-1]  # totally hacky strip off jsonp func
@@ -38,6 +41,7 @@ class AbstractScraper:
 		self._name = name
 		self._invalid = False
 		self.options = self.__class__.DEFAULT_ARGUMENTS.copy()
+		self._current_image = None
 
 	@property
 	def invalid(self):
@@ -79,13 +83,13 @@ class FlickrAPI():
 	REST_ENDPOINT = 'https://api.flickr.com/services/rest/'
 	def __init__(self):
 		config = configparser.ConfigParser()
-		config.read(['flickr.ini'])
+		config.read([os.path.join(os.path.dirname(__file__), 'flickr.ini')])
 		FlickrAPI.FLICKR_API_KEY = config.get('flickr', 'api_key')
 
 	@staticmethod
 	def reload():
 		config = configparser.ConfigParser()
-		config.read(['flickr.ini'])
+		config.read([os.path.join(os.path.dirname(__file__), 'flickr.ini')])
 		FlickrAPI.FLICKR_API_KEY = config.get('flickr', 'api_key')
 
 	@staticmethod
@@ -166,8 +170,8 @@ class FlickrProfileScraper(AbstractScraper, FlickrAPI):
 		photo = self.photos[self._index]
 		self._index += 1
 		url = FlickrAPI.getImageUrl(photo)
-		self._current_image = photo
 		photo['url'] = url
+		self._current_image = photo
 		return photo
 
 class FlickrSearchScraper(AbstractScraper, FlickrAPI):
@@ -221,7 +225,6 @@ class FlickrSearchScraper(AbstractScraper, FlickrAPI):
 		photo = self.photos[self._index]
 		self._index += 1
 		photo['url'] = FlickrAPI.getImageUrl(photo)
-
 		self._current_image = photo
 		return photo
 
@@ -276,15 +279,16 @@ class SubredditScraper(AbstractScraper):
 			if len(self.posts) == 0:
 				self.getPosts()
 			if len(self.posts) == 0:
+				self.invalid = True
 				raise ImageScrapeError("No images returned from scrape")
 			self.current_post = RedditPost(self.posts.pop(0))
 			self.postNum += 1
 
 		if len(self.current_post) == 0:
 			return next(self)
-
 		img = self.current_post[self._index]
 		self._index += 1
+		self._current_image = img
 		return img
 
 	def getPosts(self):
@@ -351,6 +355,28 @@ class SubredditScraper(AbstractScraper):
 				previd = ITEM['id'] if ITEM is not None else None
 				self.posts.append(ITEM)
 
+class DirectoryScraper(AbstractScraper):
+	DEFAULT_ARGUMENTS = OrderedDict([('directory', '')])
+	def __init__(self, directory):
+		AbstractScraper.__init__(self, "Directory " + directory)
+		self.options['directory'] = directory
+		self.files = glob(os.path.join(directory, '*.jpg'))
+		self._index = 0
+
+	@staticmethod
+	def newScraper():
+		directory = input("Directory to scrape: ")
+		return DirectoryScraper(directory)
+
+	def __next__(self):
+		f = {'url': 'file://' + self.files[self._index]}
+		self._index = (self._index + 1) % len(self.files)
+		self._current_image = f
+		return f
+
+	def getState(self):
+		return "%s %d/%d" % (self._name, self._index, len(self.files))
+
 class ScraperSession:
 	ImageChanged = Signal()
 	def __init__(self, scrapers=[]):
@@ -367,6 +393,14 @@ class ScraperSession:
 		while 1:
 			time.sleep(val)
 			self.nextWallpaper()
+
+	def setScraper(self, scraper):
+		if scraper in self.scrapers:
+			self._current_scraper = scraper
+			self._current_image = scraper._current_image
+			if (self._current_image is not None):
+				self._current_url = scraper._current_image['url']
+				self.setWallpaperFromURL(self._current_url)
 
 	def setWeight(self, scraper, w):
 		if scraper in self.weights:
@@ -471,4 +505,4 @@ class ScraperSession:
 		del self.weights[scraper]
 		return True
 
-SCRAPER_TYPES = [SubredditScraper, FlickrProfileScraper, FlickrSearchScraper]
+SCRAPER_TYPES = [SubredditScraper, FlickrProfileScraper, FlickrSearchScraper, DirectoryScraper]

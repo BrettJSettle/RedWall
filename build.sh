@@ -1,1 +1,1 @@
-pyinstaller -F redwall/redwall.py
+pyinstaller -F redwall_main.py

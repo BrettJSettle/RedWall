@@ -4,7 +4,7 @@ from tkinter.ttk import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import inspect, sys, subprocess, os
-from scrapers import *
+from redwall.scrapers import *
 from tkinter import simpledialog, messagebox
 
 class SquareButton(Frame):
@@ -177,8 +177,11 @@ class ScraperEditorDialog(simpledialog.Dialog):
             t = type(sc.DEFAULT_ARGUMENTS[p])
             data[p] = t(self.parameters[p].get())
         #data = {n: self.parameters[n].get() for n in self.parameters}
-
-        scraper = sc(**data)
+        try:
+            scraper = sc(**data)
+        except Exception as e:
+            messagebox.showinfo("Error", e)
+            return
         self.result = scraper
 
 class ScraperEditFrame(Frame):
@@ -262,8 +265,31 @@ class ScraperWindow(Frame):
         ScraperFrame.ScraperWeightChanged.connect(self.weightChanged)
         ScraperFrame.ScraperRemoved.connect(self.scraperRemoved)
         ScraperFrame.ScraperEdited.connect(self.scraperEdited)
+        ScraperFrame.ScraperSelected.connect(self.scraperSelected)
 
         self.master.protocol("WM_DELETE_WINDOW", self.close)
+
+    def scraperSelected(self, scraperFrame):
+        if scraperFrame.scraper._current_image is None:
+            try:
+                img = next(scraperFrame.scraper)
+            except ImageScrapeError as e:
+                messagebox.showinfo("Error", e)
+                return
+        self.session.setScraper(scraperFrame.scraper)
+
+        for scraper in self.scraper_map.values():
+            scraper.setState('Normal')
+
+        scraperFrame.setState('Current')
+
+        message = self.session.getState()
+        message += '\n' + '\n'.join(['%s: %s' % (k, v) for k, v in self.session._current_image.items()])
+        self.info_label.config(state="normal")
+        self.info_label.delete('1.0', END)
+        self.info_label.insert(END, message)
+        self.info_label.config(state="disabled")
+
 
     def scraperEdited(self, scraperFrame, newScraper):
         scraperFrame.setScraper(newScraper)
@@ -426,6 +452,7 @@ class ScraperFrame(Frame):
     ScraperWeightChanged = Signal()
     ScraperRemoved = Signal()
     ScraperEdited = Signal()
+    ScraperSelected = Signal()
     def __init__(self, list_container, scraper):
         Frame.__init__(self, list_container.interior, borderwidth=2, relief=GROOVE, padding=0, style="Normal.TFrame")
 
@@ -444,6 +471,12 @@ class ScraperFrame(Frame):
         self.removeButton.pack(side=RIGHT, fill=Y)
         self.editButton = SquareButton(self, text="...", command=self.edit)
         self.editButton.pack(side=RIGHT, fill=Y)
+
+        self.label.bind("<Button-1>", self.clicked)
+        self.bind("<Button-1>", self.clicked)
+
+    def clicked(self, e):
+        ScraperFrame.ScraperSelected.fire(self)
 
     def edit(self):
         editor = ScraperEditorDialog(self)

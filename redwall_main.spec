@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['redwall/redwall.py'],
+a = Analysis(['redwall_main.py'],
              pathex=['/Users/bsettle/Documents/Github/redwall'],
              binaries=[],
              datas=[],
@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='redwall',
+          name='redwall_main',
           debug=False,
           strip=False,
           upx=True,

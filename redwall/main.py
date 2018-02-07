@@ -1,5 +1,5 @@
-from ScraperWindow import ScraperWindow
-from scrapers import *
+from redwall.ScraperWindow import ScraperWindow
+from redwall.scrapers import *
 from tkinter import *
 from tkinter.ttk import *
 
@@ -10,7 +10,7 @@ def newScraper():
 	s = SCRAPER_TYPES[resp].newScraper()
 	return s
 
-def main(args = []):
+def nogui(args = []):
 	if len(args) == 1:
 		session = ScraperSession.fromFile(args[0])
 	else:
@@ -60,9 +60,9 @@ def main(args = []):
 		else:
 			print("Unrecognized response")
 
-if __name__ == '__main__':
+def run():
     if '-nogui' in sys.argv:
-        main()
+        nogui()
         exit()
 
     root = Tk()
@@ -79,3 +79,7 @@ if __name__ == '__main__':
         root.mainloop()
     except KeyboardInterrupt:
         app.close()
+
+
+if __name__ == '__main__':
+    run()
