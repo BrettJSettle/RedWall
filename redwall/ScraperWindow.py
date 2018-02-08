@@ -7,6 +7,7 @@ import inspect, sys, subprocess, os
 from redwall.scrapers import *
 from tkinter import simpledialog, messagebox
 
+
 class SquareButton(Frame):
     def __init__(self, parent, **args):
         Frame.__init__(self, parent, height=45, width=45)
@@ -239,7 +240,18 @@ class ScraperWindow(Frame):
         self.last_dir = "/"
         # parameters that you want to send through the Frame class.
         Frame.__init__(self, master)
+        style = Style()
 
+        style.configure("Spin.TButton", relief=FLAT, padding=0, font=("Monospace", 12), borderwidth=0, highlightthickness=0)
+        style.configure("Square.TButton", relief=FLAT, padding=0, font=("Monospace", 20), borderwidth=0, highlightthickness=0)
+
+        #style.configure("Normal.TFrame", background="gray")
+        style.configure("Invalid.TFrame", background="red")
+        style.configure("Current.TFrame", background="green")
+
+        #style.configure("Normal.TLabel", background="gray")
+        style.configure("Invalid.TLabel", background="red")
+        style.configure("Current.TLabel", background="green")
         #reference to the master widget, which is the tk window
         self.master = master
 
@@ -295,10 +307,13 @@ class ScraperWindow(Frame):
 
     def close(self):
         if len(self.session.scrapers) > 0:
-            v = messagebox.askyesno("Save", "Do you want to save the session file?")
-            if v:
+            v = messagebox.askyesnocancel("Save", "Do you want to save the session file?")
+            if v == True:
                 self.session.save(ScraperWindow.DEFAULT_SESSION_FILE)
-        self.master.destroy()
+            if v is not None:
+                self.master.destroy()
+        else:
+            self.master.destroy()
 
     def scraperRemoved(self, s):
         self.session.removeScraper(s)
@@ -359,6 +374,8 @@ class ScraperWindow(Frame):
                 self.session.screensaver(val)
             except KeyboardInterrupt:
                 pass
+            except Exception as e:
+                print("Error in screensaver mode:\n" + e)
             self.master.deiconify()
 
     def showHistory(self):
@@ -492,6 +509,7 @@ class ScraperFrame(Frame):
     def setState(self, a):
         try:
             self.config(style=a + ".TFrame")
+            self.label.config(style=a + '.TLabel')
         except:
             pass
 

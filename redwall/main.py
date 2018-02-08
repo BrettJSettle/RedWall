@@ -66,14 +66,6 @@ def run():
         exit()
 
     root = Tk()
-    style = Style()
-
-    style.configure("Spin.TButton", relief=FLAT, padding=0, font=("Monospace", 12), borderwidth=0, highlightthickness=0)
-    style.configure("Square.TButton", relief=FLAT, padding=0, font=("Monospace", 20), borderwidth=0, highlightthickness=0)
-
-    style.configure("Normal.TFrame", background="gray")
-    style.configure("Invalid.TFrame", background="red")
-    style.configure("Current.TFrame", background="green")
     app = ScraperWindow(root)
     try:
         root.mainloop()
