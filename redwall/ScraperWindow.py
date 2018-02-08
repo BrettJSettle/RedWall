@@ -256,9 +256,8 @@ class ScraperWindow(Frame):
             self.load_session(session)
         else:
             self.session = ScraperSession()
-        #DEFAULT_SCRAPER = SubredditScraper('wallpaperdump')
-        #DEFAULT_SCRAPER = FlickrProfileScraper('dasugaking')
-        #self.addScraper(DEFAULT_SCRAPER)
+        DEFAULT_SCRAPER = SubredditScraper('wallpaperdump')
+        self.addScraper(DEFAULT_SCRAPER)
 
         AbstractScraper.ScraperValidityChanged.connect(self.validityChanged)
         ScraperSession.ImageChanged.connect(self.imageChanged)
