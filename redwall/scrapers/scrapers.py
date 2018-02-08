@@ -482,16 +482,23 @@ class ScraperSession:
 			os.remove(self._current_url)
 
 		temp_url = tempfile.mkstemp(".jpg")
+		os.close(temp_url[0])
 		temp_url = temp_url[1]
 
 		if os.path.exists(temp_url):
-			os.remove(temp_url)
+			try:
+				os.remove(temp_url)
+			except:
+				print("Failed to remove " + temp_url)
 
-		print("Saving %s to %s" % (url, temp_url))
-		download_from_url(url, temp_url)
+		try:
+			print("Saving " + url + " to " + temp_url)
+			download_from_url(url, temp_url)
 
-		set_wallpaper(temp_url, True)
-		self._current_url = temp_url
+			set_wallpaper(temp_url, True)
+			self._current_url = temp_url
+		except Exception as e:
+			print("Failed to set wallpaper: %s" % e)
 
 	def save(self, f):
 		with open(f, 'wb') as outf:

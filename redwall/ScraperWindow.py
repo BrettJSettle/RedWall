@@ -17,7 +17,7 @@ class SquareButton(Frame):
 
         self.grid_propagate(0)
 
-        self.grid(row = 0, column = 0)
+        #self.grid(row = 0, column = 0)
         self.button.grid(sticky="NSEW")
 
 
@@ -256,8 +256,8 @@ class ScraperWindow(Frame):
             self.load_session(session)
         else:
             self.session = ScraperSession()
-        DEFAULT_SCRAPER = SubredditScraper('wallpaperdump')
-        self.addScraper(DEFAULT_SCRAPER)
+            DEFAULT_SCRAPER = SubredditScraper('wallpaperdump')
+            self.addScraper(DEFAULT_SCRAPER)
 
         AbstractScraper.ScraperValidityChanged.connect(self.validityChanged)
         ScraperSession.ImageChanged.connect(self.imageChanged)
@@ -379,7 +379,7 @@ class ScraperWindow(Frame):
 
 
     def init_window(self):
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
         frame1 = Frame(self)
         #frame1.grid(row=0, column=0, sticky="NSEW")
 

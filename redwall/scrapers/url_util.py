@@ -109,7 +109,7 @@ def download_from_url(url, dest_file):
 	"""
 	# Don't download files multiple times!
 	if type(dest_file) == str and pathexists(dest_file):
-		raise FileExistsException('URL [%s] already downloaded.' % url)
+		raise FileExistsException('URL [%s] already downloaded at %s.' % (url, dest_file))
 
 	response = request(url)
 	info = response.info()
@@ -148,8 +148,8 @@ def download_from_url(url, dest_file):
 
 	filehandle.write(filedata)
 
-	if type(dest_file) == str:
-		filehandle.close()
+	#if type(dest_file) == str:
+	filehandle.close()
 
 def process_imgur_url(url):
 	"""
