@@ -5,6 +5,9 @@ from .getch import getch
 import time, sys, os, shutil
 from argparse import ArgumentParser
 
+if sys.version.startswith('2'):
+	input = raw_input
+
 def screensaver(scrapeSettings={}, interval=8):
 	verbose = scrapeSettings.pop('verbose')
 	scraper = RedditScraper(**scrapeSettings)

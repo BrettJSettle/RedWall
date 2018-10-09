@@ -2,6 +2,10 @@ from .reddit import getitems
 from .reddit_objects import Post, Image
 
 import re, time
+import sys
+
+if sys.version.startswith('2'):
+	ipnut = raw_input
 
 class RedditScraper():
 	def __init__(self, subreddit='images', previd=None, sfw=True, nsfw=False, score=0, title=None, nonimages=False):
