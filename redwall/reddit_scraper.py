@@ -118,8 +118,8 @@ class RedditScraper():
 					#print("Skipping low score")
 					SKIPPED += 1
 					continue
-
-				POST = Post(ITEM['id'], ITEM['url'])
+					
+				POST = Post(ITEM)
 				if not self.nonimages:
 					POST.images = [im for im in POST.images if im.url.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
 

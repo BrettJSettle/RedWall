@@ -11,36 +11,32 @@ class WrongFileTypeException(Exception):
 	"""Exception raised when incorrect content-type discovered"""
 
 class Post:
-	def __init__(self, ID, url):
-		self.id = ID
-		self.url = url
+	def __init__(self, info):
+		self.subreddit = info['subreddit']
+		self.title = info['title'] if 'title' in info else 'No Title'
+		self.url = info['url']
+		self.id = info['id']
+		self.permalink = info['permalink']
 		self.images = []
 		urls = []
-		for url in extract_urls(url):
+		for url in extract_urls(self.url):
 			if url in urls:
 				continue
 			urls.append(url)
-			self.images.append(Image(self.id, url))
+			self.images.append(Image(self, url))
 		self.next_index = 0
-
-	def add_image(self, image):
-		if isinstance(image, str):
-			image = Image(image)
-		if isinstance(image, ImageURL):
-			self.images.append(image)
-			return True
-		return False
 
 	def __getitem__(self, i):
 		return self.images[i]
 
 	def __str__(self):
 		return """
-Post: %s
+Title: %s
+Post: http://reddit.com%s
 ID: %s
 Image %d/%d
 %s
-""" % (self.url, self.id, self.next_index+1, len(self.images), str(self.peek()))
+""" % (self.title, self.permalink, self.id, self.next_index+1, len(self.images), str(self.peek()))
 
 	def __iter__(self):
 		for image in self.images:
@@ -56,8 +52,8 @@ Image %d/%d
 		return len(self.images)
 
 class Image:
-	def __init__(self, ID, url):
-		self.id = ID
+	def __init__(self, post, url):
+		self.post = post
 		self.url = url
 		self.path = ""
 
